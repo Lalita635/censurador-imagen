@@ -168,7 +168,6 @@ function resetEditorState() {
   start = null
   previewArea = null
   zoom = 1
-  pdfDocument = null
   textPanel.classList.add('hidden')
 }
 
@@ -199,9 +198,16 @@ function loadImageFile(file) {
 
 async function loadPdfFile(file) {
   const buffer = await file.arrayBuffer()
-  pdfDocument = await pdfjsLib.getDocument({ data: buffer }).promise
+
+  pdfDocument = null
   pages = []
+
   resetEditorState()
+
+  pdfDocument = await pdfjsLib.getDocument({
+    data: buffer
+  }).promise
+
   pages = Array.from(
     { length: pdfDocument.numPages },
     (_, i) => ({
@@ -215,24 +221,47 @@ async function loadPdfFile(file) {
       pdfScale: PDF_RENDER_SCALE
     })
   )
+
   await ensurePdfPageRendered(0)
   showEditor()
 }
 
 async function ensurePdfPageRendered(index) {
   const pageData = pages[index]
-  if (!pdfDocument || !pageData || pageData.sourceCanvas) return
 
-  const pdfPage = await pdfDocument.getPage(index + 1)
-  const viewport = pdfPage.getViewport({ scale: PDF_RENDER_SCALE })
-  const sourceCanvas = document.createElement('canvas')
-  sourceCanvas.width = Math.ceil(viewport.width)
-  sourceCanvas.height = Math.ceil(viewport.height)
+  if (
+    !pdfDocument ||
+    !pageData ||
+    pageData.sourceCanvas
+  ) {
+    return
+  }
+
+  const pdfPage =
+    await pdfDocument.getPage(index + 1)
+
+  const viewport =
+    pdfPage.getViewport({
+      scale: PDF_RENDER_SCALE
+    })
+
+  const sourceCanvas =
+    document.createElement('canvas')
+
+  sourceCanvas.width =
+    Math.ceil(viewport.width)
+
+  sourceCanvas.height =
+    Math.ceil(viewport.height)
+
   await pdfPage.render({
-    canvasContext: sourceCanvas.getContext('2d'),
+    canvasContext:
+      sourceCanvas.getContext('2d'),
     viewport
   }).promise
-  pageData.sourceCanvas = sourceCanvas
+
+  pageData.sourceCanvas =
+    sourceCanvas
 }
 
 async function changePage(index) {
