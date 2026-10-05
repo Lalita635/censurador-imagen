@@ -2,17 +2,23 @@
 
 Aplicación web para ocultar información sensible de imágenes.
 
+# Versión 0.2 (actual):
 Permite:
 
-- Rectángulos
-- Círculos / elipses
-- Pixelado
-- Desenfoque
-- Color sólido
+- Zoom de 50% a 300%.
+- Carga de imágenes y PDF.
+- PDF de varias páginas con navegación página por página.
+- Texto editable sobre la imagen.
+- Negrita, itálica, subrayado, color, tamaño y alineación.
+- Descarga como PNG o PDF.
+
+# Versión 0.1:
+Permite:
+
+- Áreas rectangulares, cíiculares
+- Aplicar pixelado, desenfoque y color sólido
 - Múltiples áreas
-- Deshacer
-- Limpiar áreas
-- Descargar imagen resultante
+- Botones para deshacer, limpiar áreas y descargar imagen resultante
 - Drag & Drop
 - Diseño responsive
 
@@ -22,9 +28,6 @@ Las imágenes no se suben a ningún servidor.
 
 Todo el procesamiento se realiza localmente en el navegador mediante Canvas.
 
-## Desarrollo
+## Herramienta
 
-Instalar dependencias:
-
-```bash
-npm install
+https://lalita635.github.io/censurador-imagen/
