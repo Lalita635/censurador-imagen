@@ -142,12 +142,23 @@ let selectedTextId = null
 let draggingText = false
 let textDragOffset = null
 let pdfDocument = null
+const PDF_RENDER_SCALE = 2
 
 const clamp = (n, min, max) => Math.max(min, Math.min(max, n))
 const currentPageData = () => pages[currentPage]
 
-function createPage(sourceCanvas, name = 'imagen') {
-  return { sourceCanvas, name, areas: [], texts: [] }
+function createPage(
+  sourceCanvas,
+  name = 'imagen',
+  pdfScale = null
+) {
+  return {
+    sourceCanvas,
+    name,
+    areas: [],
+    texts: [],
+    pdfScale
+  }
 }
 
 function resetEditorState() {
@@ -191,13 +202,19 @@ async function loadPdfFile(file) {
   pdfDocument = await pdfjsLib.getDocument({ data: buffer }).promise
   pages = []
   resetEditorState()
-  pages = Array.from({ length: pdfDocument.numPages }, (_, i) => ({
-    sourceCanvas: null,
-    name: file.name.replace(/\.pdf$/i, '') || 'documento',
-    areas: [],
-    texts: [],
-    pdfPageNumber: i + 1
-  }))
+  pages = Array.from(
+    { length: pdfDocument.numPages },
+    (_, i) => ({
+      sourceCanvas: null,
+      name:
+        file.name.replace(/\.pdf$/i, '') ||
+        'documento',
+      areas: [],
+      texts: [],
+      pdfPageNumber: i + 1,
+      pdfScale: PDF_RENDER_SCALE
+    })
+  )
   await ensurePdfPageRendered(0)
   showEditor()
 }
@@ -207,7 +224,7 @@ async function ensurePdfPageRendered(index) {
   if (!pdfDocument || !pageData || pageData.sourceCanvas) return
 
   const pdfPage = await pdfDocument.getPage(index + 1)
-  const viewport = pdfPage.getViewport({ scale: 2 })
+  const viewport = pdfPage.getViewport({ scale: PDF_RENDER_SCALE })
   const sourceCanvas = document.createElement('canvas')
   sourceCanvas.width = Math.ceil(viewport.width)
   sourceCanvas.height = Math.ceil(viewport.height)
@@ -722,15 +739,244 @@ uploadCard.addEventListener('drop', async event => {
 $('#prevPage').addEventListener('click', () => changePage(currentPage - 1))
 $('#nextPage').addEventListener('click', () => changePage(currentPage + 1))
 
-function createOutputCanvas(page) {
+function createOutputCanvas(page, includeText = true) {
   const output = document.createElement('canvas')
+
   output.width = page.sourceCanvas.width
   output.height = page.sourceCanvas.height
+
   const outputContext = output.getContext('2d')
-  outputContext.drawImage(page.sourceCanvas, 0, 0)
-  for (const area of page.areas) applyArea(outputContext, area, 1, page.sourceCanvas)
-  for (const text of page.texts) drawText(outputContext, text, 1, false)
+
+  // Imagen original
+  outputContext.drawImage(
+    page.sourceCanvas,
+    0,
+    0
+  )
+
+  // Censuras
+  for (const area of page.areas) {
+    applyArea(
+      outputContext,
+      area,
+      1,
+      page.sourceCanvas
+    )
+  }
+
+  // Para exportar PNG sí incluimos los textos.
+  // Para PDF los agregaremos posteriormente como texto real.
+  if (includeText) {
+    for (const text of page.texts) {
+      drawText(
+        outputContext,
+        text,
+        1,
+        false
+      )
+    }
+  }
+
   return output
+}
+
+function addTextToPdf(doc, text, scale) {
+
+  /*
+   * Convertimos los estilos del editor
+   * a los estilos estándar de jsPDF.
+   */
+
+  let style = 'normal'
+
+  if (text.bold && text.italic) {
+    style = 'bolditalic'
+  } else if (text.bold) {
+    style = 'bold'
+  } else if (text.italic) {
+    style = 'italic'
+  }
+
+
+  /*
+   * Fuente.
+   *
+   * Helvetica es una de las fuentes estándar
+   * de PDF y permite mantener el texto como
+   * texto real.
+   */
+
+  doc.setFont(
+    'helvetica',
+    style
+  )
+
+
+  /*
+   * El tamaño almacenado por nuestra aplicación
+   * está expresado en píxeles.
+   *
+   * Lo convertimos a puntos PDF.
+   */
+
+  doc.setFontSize(
+    text.size * scale
+  )
+
+
+  /*
+   * Convertir #RRGGBB a RGB.
+   */
+
+  const hex =
+    String(
+      text.color || '#111827'
+    ).replace(
+      '#',
+      ''
+    )
+
+
+  const r =
+    parseInt(
+      hex.slice(0, 2),
+      16
+    ) || 0
+
+
+  const g =
+    parseInt(
+      hex.slice(2, 4),
+      16
+    ) || 0
+
+
+  const b =
+    parseInt(
+      hex.slice(4, 6),
+      16
+    ) || 0
+
+
+  doc.setTextColor(
+    r,
+    g,
+    b
+  )
+
+
+  /*
+   * Coordenadas.
+   */
+
+  const x =
+    text.x * scale
+
+
+  const y =
+    text.y * scale
+
+
+  const content =
+    text.content || 'Texto'
+
+
+  /*
+   * AGREGAMOS TEXTO REAL AL PDF.
+   *
+   * Esto es lo importante:
+   * NO estamos usando addImage().
+   */
+
+  doc.text(
+    content,
+    x,
+    y,
+    {
+      align:
+        text.align || 'left',
+
+      baseline:
+        'alphabetic'
+    }
+  )
+
+
+  /*
+   * Subrayado.
+   *
+   * jsPDF no necesita convertir el texto
+   * a imagen para esto. Dibujamos solamente
+   * la línea debajo.
+   */
+
+  if (text.underline) {
+
+    const width =
+      doc.getTextWidth(
+        content
+      )
+
+
+    let startX = x
+
+
+    if (
+      text.align === 'center'
+    ) {
+
+      startX -=
+        width / 2
+
+    }
+
+
+    if (
+      text.align === 'right'
+    ) {
+
+      startX -=
+        width
+
+    }
+
+
+    const underlineY =
+      y +
+      Math.max(
+        1,
+        text.size *
+          scale *
+          0.08
+      )
+
+
+    doc.setLineWidth(
+      Math.max(
+        0.5,
+        text.size *
+          scale *
+          0.04
+      )
+    )
+
+
+    doc.setDrawColor(
+      r,
+      g,
+      b
+    )
+
+
+    doc.line(
+      startX,
+      underlineY,
+      startX + width,
+      underlineY
+    )
+
+  }
+
 }
 
 function downloadBlob(blob, filename) {
@@ -749,33 +995,156 @@ function downloadCurrentImage() {
   output.toBlob(blob => downloadBlob(blob, `${page.name}-censurado.png`), 'image/png')
 }
 
+function getPdfPageDimensions(page) {
+  const width = page.sourceCanvas.width
+  const height = page.sourceCanvas.height
+
+  if (page.pdfScale) {
+    return {
+      widthPt: width / page.pdfScale,
+      heightPt: height / page.pdfScale
+    }
+  }
+
+  return {
+    widthPt: width * 72 / 96,
+    heightPt: height * 72 / 96
+  }
+}
+
+function getPdfTextScale(page) {
+  if (page.pdfScale) {
+    return 1 / page.pdfScale
+  }
+
+  return 72 / 96
+}
+
 async function downloadPdf() {
   if (!pages.length) return
+
   const originalPage = currentPage
   const originalZoom = zoom
-  await ensurePdfPageRendered(0)
-  const firstOutput = createOutputCanvas(pages[0])
-  const firstWidthPt = firstOutput.width * 72 / 96
-  const firstHeightPt = firstOutput.height * 72 / 96
-  const firstOrientation = firstOutput.width >= firstOutput.height ? 'landscape' : 'portrait'
-  const doc = new jsPDF({ unit: 'pt', format: [firstWidthPt, firstHeightPt], orientation: firstOrientation, compress: true })
 
   try {
-    doc.addImage(firstOutput.toDataURL('image/png'), 'PNG', 0, 0, firstWidthPt, firstHeightPt, undefined, 'FAST')
+    await ensurePdfPageRendered(0)
 
-    for (let i = 1; i < pages.length; i++) {
-      await ensurePdfPageRendered(i)
-      const output = createOutputCanvas(pages[i])
-      const widthPt = output.width * 72 / 96
-      const heightPt = output.height * 72 / 96
-      const orientation = output.width >= output.height ? 'landscape' : 'portrait'
-      doc.addPage([widthPt, heightPt], orientation)
-      doc.addImage(output.toDataURL('image/png'), 'PNG', 0, 0, widthPt, heightPt, undefined, 'FAST')
+    const firstPage = pages[0]
+
+    // Para PDF: imagen + censuras, SIN textos.
+    const firstOutput =
+      createOutputCanvas(
+        firstPage,
+        false
+      )
+
+    const {
+      widthPt: firstWidthPt,
+      heightPt: firstHeightPt
+    } = getPdfPageDimensions(firstPage)
+
+    const firstOrientation =
+      firstWidthPt >= firstHeightPt
+        ? 'landscape'
+        : 'portrait'
+
+    const doc = new jsPDF({
+      unit: 'pt',
+      format: [
+        firstWidthPt,
+        firstHeightPt
+      ],
+      orientation: firstOrientation,
+      compress: true
+    })
+
+    // Imagen + censuras
+    doc.addImage(
+      firstOutput.toDataURL('image/png'),
+      'PNG',
+      0,
+      0,
+      firstWidthPt,
+      firstHeightPt,
+      undefined,
+      'FAST'
+    )
+
+    // Textos como texto REAL de PDF
+    for (const text of firstPage.texts) {
+      addTextToPdf(
+        doc,
+        text,
+        getPdfTextScale(firstPage)
+      )
     }
-    doc.save(`${pages[0].name}-censurado.pdf`)
+
+    // Páginas siguientes
+    for (
+      let i = 1;
+      i < pages.length;
+      i++
+    ) {
+
+      await ensurePdfPageRendered(i)
+
+      const page = pages[i]
+
+      const output =
+        createOutputCanvas(
+          page,
+          false
+        )
+
+      const {
+        widthPt,
+        heightPt
+      } = getPdfPageDimensions(page)
+
+      const orientation =
+        widthPt >= heightPt
+          ? 'landscape'
+          : 'portrait'
+
+      doc.addPage(
+        [
+          widthPt,
+          heightPt
+        ],
+        orientation
+      )
+
+      // Imagen + censuras
+      doc.addImage(
+        output.toDataURL('image/png'),
+        'PNG',
+        0,
+        0,
+        widthPt,
+        heightPt,
+        undefined,
+        'FAST'
+      )
+
+      // Textos reales
+      for (const text of page.texts) {
+        addTextToPdf(
+          doc,
+          text,
+          getPdfTextScale(page)
+        )
+      }
+    }
+
+    doc.save(
+      `${pages[0].name}-censurado.pdf`
+    )
+
   } finally {
+
     currentPage = originalPage
     zoom = originalZoom
+
     updatePageBar()
     render()
   }
