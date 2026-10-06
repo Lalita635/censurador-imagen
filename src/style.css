@@ -149,11 +149,31 @@ button:disabled {
   font-weight: 700;
   border-radius: 9px;
   padding: 11px 15px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .primary:hover,
 .download:hover {
   background: #fff;
+}
+
+.primary svg,
+.download svg {
+  width: 18px;
+  height: 18px;
+
+  fill: none;
+  stroke: currentColor;
+
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  flex: 0 0 auto;
 }
 
 .secondary {
@@ -387,6 +407,10 @@ canvas {
   flex: 0 0 auto;
 }
 
+.canvas-shell.zoomed {
+  align-items: flex-start;
+}
+
 .mobile-actions {
   display: none;
   gap: 8px;
@@ -406,6 +430,235 @@ footer {
 
 .hidden {
   display: none !important;
+}
+
+/* =========================
+   ICONOS SVG
+========================= */
+
+.tool svg,
+.zoom-btn svg,
+.format-btn svg,
+.icon-btn svg,
+.page-btn svg,
+.delete-text-btn svg {
+  width: 19px;
+  height: 19px;
+
+  fill: none;
+  stroke: currentColor;
+
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  flex: 0 0 auto;
+
+  transition:
+    transform .15s ease,
+    color .15s ease;
+}
+
+
+/* Herramientas principales */
+
+.tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+
+.tool:hover svg {
+  transform: scale(1.08);
+}
+
+
+.tool.active svg {
+  color: #b9c3ff;
+}
+
+
+/* Botones de acciones con icono */
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+}
+
+
+/* Colores individuales */
+
+.icon-undo {
+  color: #818cf8;
+}
+
+.icon-undo:hover {
+  color: #a5b4fc;
+}
+
+
+.icon-clear {
+  color: #f87171;
+}
+
+.icon-clear:hover {
+  color: #fca5a5;
+}
+
+
+.icon-new {
+  color: #38bdf8;
+}
+
+.icon-new:hover {
+  color: #7dd3fc;
+}
+
+
+.icon-image {
+  color: #4ade80;
+}
+
+.icon-image:hover {
+  color: #86efac;
+}
+
+
+.icon-pdf {
+  color: #fb7185;
+}
+
+.icon-pdf:hover {
+  color: #fda4af;
+}
+
+
+/* Animación suave */
+
+.icon-btn:hover svg {
+  transform: scale(1.08);
+}
+
+
+/* Zoom */
+
+.zoom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.zoom-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+
+/* Botones de formato */
+
+.format-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+
+.format-btn:hover svg,
+.format-btn.active svg {
+  transform: scale(1.05);
+}
+
+
+/* Navegación de páginas */
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+
+.page-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+
+/* Eliminar texto */
+
+.delete-text-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+
+.delete-text-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+
+/* Icono de subida */
+
+.upload-icon svg {
+  width: 30px;
+  height: 30px;
+
+  fill: none;
+  stroke: currentColor;
+
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+/* Acciones móviles */
+
+.mobile-actions .download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+
+.mobile-actions .download svg {
+  width: 18px;
+  height: 18px;
+}
+
+
+/* En móvil, las herramientas son solo iconos */
+
+@media (max-width: 560px) {
+
+  .tool {
+    width: 40px;
+    height: 38px;
+    padding: 0;
+  }
+
+  .tool svg {
+    width: 20px;
+    height: 20px;
+  }
+
 }
 
 @media (max-width:900px) {

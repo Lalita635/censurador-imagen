@@ -9,99 +9,500 @@ const app = document.querySelector('#app')
 
 app.innerHTML = `
 <main class="page">
+
   <header class="topbar">
     <div>
-      <div class="brand">Censurador <span>de imágenes</span></div>
-      <p class="subtitle">Oculta información sensible directamente en tu navegador.</p>
+      <div class="brand">
+        Censurador <span>de imágenes</span>
+      </div>
+      <p class="subtitle">
+        Oculta información sensible directamente en tu navegador.
+      </p>
     </div>
-    <div class="privacy"><span class="dot"></span>Procesamiento local</div>
+
+    <div class="privacy">
+      <span class="dot"></span>
+      Procesamiento local
+    </div>
   </header>
 
+
   <section class="card upload-card" id="uploadCard">
-    <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,.pdf" hidden />
-    <div class="upload-icon">↑</div>
+
+    <input
+      id="fileInput"
+      type="file"
+      accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,.pdf"
+      hidden
+    />
+
+    <div class="upload-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 16V4"/>
+        <path d="M7 9l5-5 5 5"/>
+        <path d="M5 20h14"/>
+      </svg>
+    </div>
+
     <h1>Sube una imagen o PDF</h1>
-    <p>Arrastra un archivo aquí o selecciónalo desde tu dispositivo.</p>
-    <button class="primary" id="chooseBtn">Seleccionar archivo</button>
+
+    <p>
+      Arrastra un archivo aquí o selecciónalo desde tu dispositivo.
+    </p>
+
+    <button class="primary" id="chooseBtn">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 16V4"/>
+        <path d="M7 9l5-5 5 5"/>
+        <path d="M5 20h14"/>
+      </svg>
+      <span>Seleccionar archivo</span>
+    </button>
+
     <small>PNG, JPG, WEBP, GIF o PDF</small>
+
   </section>
 
+
   <section class="editor hidden" id="editor">
+
     <div class="toolbar">
-      <div class="tool-group">
-        <button class="tool active" data-tool="rectangle" title="Rectángulo">▭ <span>Rectángulo</span></button>
-        <button class="tool" data-tool="ellipse" title="Círculo / elipse">◯ <span>Círculo</span></button>
-        <button class="tool" data-tool="text" title="Agregar texto">T <span>Texto</span></button>
+
+      <!-- Herramientas -->
+      <div class="tool-group tool-selector">
+
+        <button
+          class="tool active"
+          data-tool="rectangle"
+          title="Rectángulo"
+          aria-label="Rectángulo"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="5" width="16" height="14" rx="2"/>
+          </svg>
+          <span>Rectángulo</span>
+        </button>
+
+
+        <button
+          class="tool"
+          data-tool="ellipse"
+          title="Círculo / elipse"
+          aria-label="Círculo o elipse"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <ellipse cx="12" cy="12" rx="8" ry="6"/>
+          </svg>
+          <span>Círculo</span>
+        </button>
+
+
+        <button
+          class="tool"
+          data-tool="text"
+          title="Agregar texto"
+          aria-label="Agregar texto"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 5h14"/>
+            <path d="M12 5v14"/>
+            <path d="M8 19h8"/>
+          </svg>
+          <span>Texto</span>
+        </button>
+
       </div>
 
-      <div class="tool-group">
-        <label class="select-label">Efecto
+
+      <!-- Efectos -->
+      <div class="tool-group effect-group">
+
+        <label class="select-label">
+          <span>Efecto</span>
+
           <select id="effect">
             <option value="pixelate">Pixelar</option>
             <option value="blur">Desenfocar</option>
             <option value="solid">Color sólido</option>
           </select>
         </label>
-        <label class="range-label" id="strengthWrap">Intensidad
-          <input id="strength" type="range" min="4" max="40" value="14" />
+
+
+        <label class="range-label" id="strengthWrap">
+          <span>Intensidad</span>
+
+          <input
+            id="strength"
+            type="range"
+            min="4"
+            max="40"
+            value="14"
+          />
+
           <output id="strengthValue">14</output>
         </label>
-        <label class="color-label hidden" id="colorWrap">Color
-          <input id="color" type="color" value="#111827" />
+
+
+        <label class="color-label hidden" id="colorWrap">
+          <span>Color</span>
+
+          <input
+            id="color"
+            type="color"
+            value="#111827"
+          />
         </label>
+
       </div>
 
+
+      <!-- Zoom -->
       <div class="zoom-group">
-        <button class="zoom-btn" id="zoomOut" title="Alejar">−</button>
-        <button class="zoom-value" id="zoomReset" title="Restablecer zoom">100%</button>
-        <button class="zoom-btn" id="zoomIn" title="Acercar">+</button>
+
+        <button
+          class="zoom-btn"
+          id="zoomOut"
+          title="Alejar"
+          aria-label="Alejar"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14"/>
+          </svg>
+        </button>
+
+
+        <button
+          class="zoom-value"
+          id="zoomReset"
+          title="Restablecer zoom"
+          aria-label="Restablecer zoom"
+        >
+          100%
+        </button>
+
+
+        <button
+          class="zoom-btn"
+          id="zoomIn"
+          title="Acercar"
+          aria-label="Acercar"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 5v14"/>
+            <path d="M5 12h14"/>
+          </svg>
+        </button>
+
       </div>
 
+
+      <!-- Acciones -->
       <div class="tool-group actions">
-        <button class="secondary" id="undoBtn">↶ Deshacer</button>
-        <button class="secondary" id="clearBtn">Limpiar</button>
-        <button class="secondary" id="newBtn">Nueva</button>
-        <button class="download" id="downloadImageBtn">↓ Imagen</button>
-        <button class="download" id="downloadPdfBtn">↓ PDF</button>
+
+
+        <button
+          class="secondary icon-btn icon-undo"
+          id="undoBtn"
+          title="Deshacer"
+          aria-label="Deshacer"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 7L4 12L9 17"/>
+            <path d="M4 12h10c4 0 6 2 6 6"/>
+          </svg>
+        </button>
+
+
+        <button
+          class="secondary icon-btn icon-clear"
+          id="clearBtn"
+          title="Limpiar"
+          aria-label="Limpiar"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 20l3.5-1 11-11-3.5-3.5-11 11L4 20z"/>
+            <path d="M13.5 5.5l3.5 3.5"/>
+            <path d="M3 21h8"/>
+          </svg>
+        </button>
+
+
+        <button
+          class="secondary icon-btn icon-new"
+          id="newBtn"
+          title="Nueva imagen"
+          aria-label="Nueva imagen"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10z"/>
+            <path d="M13 3v7h7"/>
+            <path d="M12 14v5"/>
+            <path d="M9.5 16.5h5"/>
+          </svg>
+        </button>
+
+
+        <button
+          class="download icon-btn icon-image"
+          id="downloadImageBtn"
+          title="Descargar imagen"
+          aria-label="Descargar imagen"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="16" rx="2"/>
+            <circle cx="8.5" cy="9" r="1.5"/>
+            <path d="M3 16l5-5 4 4 3-3 6 6"/>
+          </svg>
+        </button>
+
+
+        <button
+          class="download icon-btn icon-pdf"
+          id="downloadPdfBtn"
+          title="Descargar PDF"
+          aria-label="Descargar PDF"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 3h8l5 5v13H6z"/>
+            <path d="M14 3v5h5"/>
+            <path d="M9 17v-5h2a2 2 0 0 1 0 4H9"/>
+            <path d="M14 17v-5h1.5a2.5 2.5 0 0 1 0 5H14"/>
+          </svg>
+        </button>
+
       </div>
+
     </div>
 
+
+    <!-- Panel de texto -->
     <div class="text-panel hidden" id="textPanel">
-      <label>Texto <input id="textContent" type="text" value="Texto" maxlength="500" /></label>
-      <label>Tamaño <input id="textSize" type="number" min="8" max="300" value="32" /></label>
-      <label>Color <input id="textColor" type="color" value="#111827" /></label>
+
+      <label>
+        Texto
+        <input
+          id="textContent"
+          type="text"
+          value="Texto"
+          maxlength="500"
+        />
+      </label>
+
+
+      <label>
+        Tamaño
+        <input
+          id="textSize"
+          type="number"
+          min="8"
+          max="300"
+          value="32"
+        />
+      </label>
+
+
+      <label>
+        Color
+        <input
+          id="textColor"
+          type="color"
+          value="#111827"
+        />
+      </label>
+
+
       <div class="format-buttons">
-        <button class="format-btn" data-format="bold" title="Negrita"><strong>N</strong></button>
-        <button class="format-btn" data-format="italic" title="Itálica"><em>I</em></button>
-        <button class="format-btn" data-format="underline" title="Subrayado"><u>U</u></button>
+
+        <button
+          class="format-btn"
+          data-format="bold"
+          title="Negrita"
+          aria-label="Negrita"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 5h6a4 4 0 0 1 0 8H7z"/>
+            <path d="M7 13h7a4 4 0 0 1 0 8H7z"/>
+            <path d="M7 5v16"/>
+          </svg>
+        </button>
+
+
+        <button
+          class="format-btn"
+          data-format="italic"
+          title="Itálica"
+          aria-label="Itálica"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M10 5h9"/>
+            <path d="M5 19h9"/>
+            <path d="M14 5L10 19"/>
+          </svg>
+        </button>
+
+
+        <button
+          class="format-btn"
+          data-format="underline"
+          title="Subrayado"
+          aria-label="Subrayado"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 5v6a5 5 0 0 0 10 0V5"/>
+            <path d="M5 20h14"/>
+          </svg>
+        </button>
+
       </div>
+
+
       <div class="format-buttons">
-        <button class="format-btn" data-align="left" title="Alinear izquierda">≡</button>
-        <button class="format-btn" data-align="center" title="Centrar">≡</button>
-        <button class="format-btn" data-align="right" title="Alinear derecha">≡</button>
+
+        <button
+          class="format-btn"
+          data-align="left"
+          title="Alinear izquierda"
+          aria-label="Alinear izquierda"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 6h14"/>
+            <path d="M5 10h10"/>
+            <path d="M5 14h14"/>
+            <path d="M5 18h10"/>
+          </svg>
+        </button>
+
+
+        <button
+          class="format-btn"
+          data-align="center"
+          title="Centrar"
+          aria-label="Centrar"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 6h14"/>
+            <path d="M7 10h10"/>
+            <path d="M5 14h14"/>
+            <path d="M7 18h10"/>
+          </svg>
+        </button>
+
+
+        <button
+          class="format-btn"
+          data-align="right"
+          title="Alinear derecha"
+          aria-label="Alinear derecha"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 6h14"/>
+            <path d="M9 10h10"/>
+            <path d="M5 14h14"/>
+            <path d="M9 18h10"/>
+          </svg>
+        </button>
+
       </div>
-      <button class="secondary" id="deleteTextBtn">Eliminar texto</button>
+
+
+      <button
+        class="secondary delete-text-btn"
+        id="deleteTextBtn"
+        title="Eliminar texto"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 7h14"/>
+          <path d="M10 11v6"/>
+          <path d="M14 11v6"/>
+          <path d="M8 7l1-3h6l1 3"/>
+          <path d="M7 7l1 14h8l1-14"/>
+        </svg>
+        <span>Eliminar texto</span>
+      </button>
+
     </div>
 
+
+    <!-- Navegación PDF -->
     <div class="page-bar hidden" id="pageBar">
-      <button class="secondary" id="prevPage">←</button>
-      <span>Página <strong id="pageNumber">1</strong> de <strong id="pageCount">1</strong></span>
-      <button class="secondary" id="nextPage">→</button>
+
+      <button
+        class="secondary icon-btn page-btn"
+        id="prevPage"
+        title="Página anterior"
+        aria-label="Página anterior"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M14.5 5l-7 7 7 7"/>
+        </svg>
+      </button>
+
+
+      <span>
+        Página
+        <strong id="pageNumber">1</strong>
+        de
+        <strong id="pageCount">1</strong>
+      </span>
+
+
+      <button
+        class="secondary icon-btn page-btn"
+        id="nextPage"
+        title="Página siguiente"
+        aria-label="Página siguiente"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9.5 5l7 7-7 7"/>
+        </svg>
+      </button>
+
     </div>
 
-    <div class="hint" id="hint">Arrastra sobre la imagen para crear un área. Puedes crear tantas como quieras.</div>
+
+    <div class="hint" id="hint">
+      Arrastra sobre la imagen para crear un área.
+      Puedes crear tantas como quieras.
+    </div>
+
 
     <div class="canvas-shell" id="canvasShell">
       <canvas id="canvas"></canvas>
     </div>
 
+
     <div class="mobile-actions">
-      <button class="download" id="downloadImageBtnMobile">↓ Descargar imagen</button>
-      <button class="download" id="downloadPdfBtnMobile">↓ Descargar PDF</button>
+
+      <button class="download" id="downloadImageBtnMobile">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="16" rx="2"/>
+          <circle cx="8.5" cy="9" r="1.5"/>
+          <path d="M3 16l5-5 4 4 3-3 6 6"/>
+        </svg>
+        <span>Descargar imagen</span>
+      </button>
+
+
+      <button class="download" id="downloadPdfBtnMobile">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 3h8l5 5v13H6z"/>
+          <path d="M14 3v5h5"/>
+          <path d="M9 17v-5h2a2 2 0 0 1 0 4H9"/>
+          <path d="M14 17v-5h1.5a2.5 2.5 0 0 1 0 5H14"/>
+        </svg>
+        <span>Descargar PDF</span>
+      </button>
+
     </div>
+
   </section>
 
-  <footer>Tus archivos no se suben a ningún servidor. Todo el procesamiento ocurre en tu navegador.</footer>
+
+  <footer>
+    Tus archivos no se suben a ningún servidor.
+    Todo el procesamiento ocurre en tu navegador.
+  </footer>
+
 </main>
 `
 
@@ -522,6 +923,13 @@ function addTextAt(position) {
 
 function setZoom(nextZoom) {
   zoom = clamp(nextZoom, 0.5, 3)
+  shell.classList.toggle('zoomed', zoom > 1)
+
+  if (zoom === 1) {
+    shell.scrollTop = 0
+    shell.scrollLeft = 0
+  }
+
   render()
 }
 
